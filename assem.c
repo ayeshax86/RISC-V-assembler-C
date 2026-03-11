@@ -79,31 +79,31 @@ int fn_I(char *line, int *rs1_ptr, int *imm_ptr) {
 }
 
 
-// S-type: e.g., lw x3, 34(x2)
-int fn_S(char *line, int *rs1_ptr, int *imm_ptr, int *rs2_ptr) {
+// S-type: e.g., sw x4, 8(x1)
+void fn_S(char *line, int *rs1_ptr, int *rs2_ptr, int *imm_ptr) {
     char rs2_str[10], imm_str[20], rs1_str[10];
     int i = 0, j = 0;
 
-    // Parse rs2
+    // Parse rs2 (data register)
     while (line[i] != ',' && line[i] != '\0') rs2_str[j++] = line[i++];
-    rs2_str[j] = '\0'; i++; while (line[i] == ' ') i++;
+    rs2_str[j] = '\0';
+    i++; while (line[i] == ' ') i++;
 
-    // Parse offset(base) like 34(x2)
+    // Parse immediate (offset)
     j = 0;
     while (line[i] != '(' && line[i] != '\0') imm_str[j++] = line[i++];
-    imm_str[j] = '\0'; i++;  // skip '('
+    imm_str[j] = '\0';
+    i++;  // skip '('
 
-    // Parse base register
+    // Parse rs1 (base register)
     j = 0;
     while (line[i] != ')' && line[i] != '\0') rs1_str[j++] = line[i++];
     rs1_str[j] = '\0';
 
-    // Convert registers and immediate
-    *rs1_ptr = atoi(rs1_str + 1);
-    *rs2_ptr = atoi(rs2_str + 1);
-    *imm_ptr = atoi(imm_str);
-
-    return 0; // S-type does not have rd
+    // Convert to integers
+    *rs1_ptr = atoi(rs1_str + 1); // base register
+    *rs2_ptr = atoi(rs2_str + 1); // data register
+    *imm_ptr = atoi(imm_str);     // offset
 }
 
 
@@ -313,15 +313,15 @@ else if (strcmp(opcode_str,"lhu")==0){ opcode=0b0000011; funct3=0b101;
 
 /* Stores */
 else if (strcmp(opcode_str,"sb")==0){ opcode=0b0100011; funct3=0b000;
-    rd = fn_S(line, &rs1, &imm);
+    fn_S(line, &rs1, &rs2, &imm);
     inst_type = 'S';
 }
 else if (strcmp(opcode_str,"sh")==0){ opcode=0b0100011; funct3=0b001;
-    rd = fn_S(line, &rs1, &imm);
+    fn_S(line, &rs1, &rs2, &imm);
     inst_type = 'S';
 }
 else if (strcmp(opcode_str,"sw")==0){ opcode=0b0100011; funct3=0b010;
-    rd = fn_S(line, &rs1, &imm);
+    fn_S(line, &rs1, &rs2, &imm);
     inst_type = 'S';
 }
 
